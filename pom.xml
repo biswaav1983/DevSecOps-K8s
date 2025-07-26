@@ -103,7 +103,7 @@
    		
 		<configuration>
       			<format>ALL</format>
-      			<failBuildOnCVSS>10</failBuildOnCVSS>
+      			<failBuildOnCVSS>8</failBuildOnCVSS>
 		 </configuration>
 	</plugin>
 
