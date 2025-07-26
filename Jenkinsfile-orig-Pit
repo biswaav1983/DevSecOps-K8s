@@ -35,12 +35,6 @@ pipeline {
       }
     }	
 
-	 stage('SonarQube - SAST') {
-     	   steps {
-        	  sh "mvn sonar:sonar -Dsonar.projectKey=numeric-application -Dsonar.host.url=http://k8s-master-node:9000 -Dsonar.login=325e9864ba94536721163d51876dcec7c7b885ac"
-      }
-    }
-
            stage('Docker Build and Push') {
             steps {
               withDockerRegistry([credentialsId: "docker-hub", url: "https://quay.io/"]) {
