@@ -15,6 +15,7 @@ spec:
       labels:
         app: devsecops
     spec:
+      serviceAccountName: default
       containers:
       - image: replace
         name: devsecops-container
