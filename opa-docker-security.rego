@@ -1,4 +1,4 @@
-#package main
+package main
 import rego.v1
 
 # Do Not store secrets in ENV variables
