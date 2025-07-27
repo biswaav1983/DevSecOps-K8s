@@ -24,3 +24,5 @@ scan_score=$(curl -sSX POST --data-binary @"k8s_deployment_service.yaml" https:/
 	    echo "Score is $scan_score, which is less than or equal to 5."
 	    echo "Scanning Kubernetes Resource has Failed"
 	    exit 1;
+
+	fi;
