@@ -1,5 +1,5 @@
-package main
-import future.keywords.if
+#package main
+import rego.v1
 
 # Do Not store secrets in ENV variables
 secrets_env := [
