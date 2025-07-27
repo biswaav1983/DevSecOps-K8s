@@ -1,4 +1,5 @@
 package main
+import future.keywords.if
 
 # Do Not store secrets in ENV variables
 secrets_env := [
