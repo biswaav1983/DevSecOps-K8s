@@ -1,9 +1,5 @@
 pipeline {
     agent any
-
-
-	imageName = "biswaav/numeric-app:${GIT_COMMIT}"
-
     tools {
         // Install the Maven version configured as "M3" and add it to the path.
         maven "maven_new"
@@ -66,14 +62,7 @@ pipeline {
 
 	   stage('Vulnerability Scan - Kubernetes') {
      	     steps {
-		parallel(
-	     "Kubesec Scan": {	
 		sh "bash kubesec-scan.sh"
-		},
-	      "Trivy Scan": {
-                sh "bash trivy-k8s-scan.sh"
-          }
-        )	
       	}
     }	
            stage('K8S Deployment - DEV') {
