@@ -1,7 +1,7 @@
 pipeline {
     agent any
 	environment {
-		imageName = "biswaav/numeric-app:${GIT_COMMIT}"
+		imageName = "quay.io/biswaav/numeric-app:${GIT_COMMIT}"
            }
 
     tools {
