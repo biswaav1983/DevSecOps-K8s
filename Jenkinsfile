@@ -1,8 +1,8 @@
 pipeline {
     agent any
-
-
-	imageName = "biswaav/numeric-app:${GIT_COMMIT}"
+	environment {
+		imageName = "biswaav/numeric-app:${GIT_COMMIT}"
+           }
 
     tools {
         // Install the Maven version configured as "M3" and add it to the path.
