@@ -15,36 +15,38 @@ pipeline {
     }
 
     stages {
-        stage('Build') {
+        
+	stage('Build') {
             steps {
                 sh "mvn clean package -DskipTests=true"
                 archive 'target/*.jar'
             }
         }
-           stage('Unit Tests - JUnit and JaCoCo') {
+         
+	stage('Unit Tests - JUnit and JaCoCo') {
             steps {
                 sh "ls ; mvn test"
             }
         }
 
-	    stage('Mutation Tests - PIT') {
+        stage('Mutation Tests - PIT') {
       	     steps {
         	 sh "mvn org.pitest:pitest-maven:mutationCoverage"
       	     }
-    }	
+    	}	
 
 	 stage('SonarQube - SAST') {
      	   steps {
 		 withSonarQubeEnv('SonarQube') {
         	  sh "mvn sonar:sonar -Dsonar.projectKey=numeric-application -Dsonar.host.url=http://k8s-master-node:9000"
-      	}
+      	          }
 	timeout(time: 2, unit: 'MINUTES') {
 	  script {
 	    waitForQualityGate abortPipeline: true
         	}
 	     }
-   	}	
-    }
+   	        }	
+        }
 
 	stage('Vulnerability Scan - Docker ') {
       	   steps {
@@ -54,9 +56,9 @@ pipeline {
 			},
 			"Trivy Scan": {
            		  sh "bash trivy-docker-image-scan.sh"
-          	  }
-       		 )
-      	 	}
+          	           }
+       		       )
+      	 	   } 
       	      }
 
            stage('Docker Build and Push') {
@@ -77,10 +79,10 @@ pipeline {
 		},
 	      "Trivy Scan": {
                 sh "bash trivy-k8s-scan.sh"
-          }
-        )	
-      	}
-    }	
+                   }
+             )	
+      	  } 
+        }	
            stage('K8S Deployment - DEV') {
                steps {  
                  withKubeConfig([credentialsId: 'kubeconfig']) {
@@ -89,28 +91,26 @@ pipeline {
              }
           }
       }   
-   }
-	
-
-	stage('Integration Tests - DEV') {
+  	
+	   stage('Integration Tests - DEV') {
       		steps {
         	script {
          	try {
             		withKubeConfig([credentialsId: 'kubeconfig']) {
               		sh "bash integration-test.sh"
             		}
-          } 
+                    } 
 	    catch (e) {
             		withKubeConfig([credentialsId: 'kubeconfig']) {
               		sh "kubectl -n default rollout undo deploy ${deploymentName}"
-            }
+                  }
             throw e
-          }
-        }
-      }
-    }
+                     }
+                  }    
+               }
+            }
 
-
+}
 
 	post {
     		always {
