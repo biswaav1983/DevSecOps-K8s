@@ -1,9 +1,6 @@
 #!/bin/bash
 
 #integration-test.sh
-export serviceName = "devsecops-svc"
-export applicationURL = "http://k8s-master-node"
-export applicationURI = "/increment/99"
 
 sleep 5s
 
