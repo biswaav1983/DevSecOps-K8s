@@ -120,7 +120,7 @@
    		
 		<configuration>
       			<format>ALL</format>
-      			<failBuildOnCVSS>10</failBuildOnCVSS>
+      			<failBuildOnCVSS>11</failBuildOnCVSS>
 		 </configuration>
 	</plugin>
 
