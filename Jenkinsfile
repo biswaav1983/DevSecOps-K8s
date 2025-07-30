@@ -5,8 +5,8 @@ pipeline {
 		deploymentName = "devsecops"
     		containerName = "devsecops-container"
     		serviceName = "devsecops-svc"
-		applicationURL = "http://k8s-master-node/"
-    		applicationURI = "/increment/99"
+		applicationURL = "http://k8s-master-node"
+    		applicationURI = "increment/99"
            }
 
     tools {
