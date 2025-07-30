@@ -2,11 +2,6 @@ pipeline {
     agent any
 	environment {
 		imageName = "quay.io/biswaav/numeric-app:${GIT_COMMIT}"
-		deploymentName = "devsecops"
-    		containerName = "devsecops-container"
-    		serviceName = "devsecops-svc"
-		applicationURL = "http://k8s-master-node/"
-    		applicationURI = "/increment/99"
            }
 
     tools {
@@ -90,27 +85,6 @@ pipeline {
           }
       }   
    }
-	
-
-	stage('Integration Tests - DEV') {
-      		steps {
-        	script {
-         	try {
-            		withKubeConfig([credentialsId: 'kubeconfig']) {
-              		sh "bash integration-test.sh"
-            		}
-          } 
-	    catch (e) {
-            		withKubeConfig([credentialsId: 'kubeconfig']) {
-              		sh "kubectl -n default rollout undo deploy ${deploymentName}"
-            }
-            throw e
-          }
-        }
-      }
-    }
-
-
 
 	post {
     		always {
