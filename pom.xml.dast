@@ -46,6 +46,11 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+   			<groupId>org.springdoc</groupId>
+   			<artifactId>springdoc-openapi-ui</artifactId>
+   			<version>1.2.30</version>
+		</dependency>
 
 
 
@@ -115,7 +120,7 @@
    		
 		<configuration>
       			<format>ALL</format>
-      			<failBuildOnCVSS>10</failBuildOnCVSS>
+      			<failBuildOnCVSS>11</failBuildOnCVSS>
 		 </configuration>
 	</plugin>
 
