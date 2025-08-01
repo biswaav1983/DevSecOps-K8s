@@ -1,0 +1,12 @@
+Note - Kube-Bench command
+
+Please try this command
+
+docker run --pid=host -v /etc:/etc:ro -v /var:/var:ro -v $(which kubectl):/usr/local/mount-from-host/bin/kubectl -v ~/.kube:/.kube -e KUBECONFIG=/.kube/config -t aquasec/kube-bench:latest  run --targets master --version 1.19 --check 1.2.7,1.2.8,1.2.9 --json | jq .Totals.total_fail
+
+Kubelet Bench Marks
+Ex: Ensure that the --anonymous-auth argument is set to false (Automated)
+
+ps -ef | grep kubelet
+
+
