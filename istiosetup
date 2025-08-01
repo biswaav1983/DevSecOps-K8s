@@ -1,0 +1,149 @@
+################### Istio Installation ################### 
+
+curl -L https://istio.io/downloadIstio | sh -
+$ cd istio-1.26.3
+export PATH=$PWD/bin:$PATH
+istioctl install --set profile=demo -y && kubectl apply -f samples/addons
+
+################### Istio Installation ################### 
+
+validation
+root@master-node:~/istio-1.26.3# kubectl -n istio-system get all
+
+NAME                                   READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/grafana                1/1     1            1           3m18s
+deployment.apps/istio-egressgateway    1/1     1            1           5m54s
+deployment.apps/istio-ingressgateway   1/1     1            1           5m54s
+deployment.apps/istiod                 1/1     1            1           5m55s
+deployment.apps/jaeger                 1/1     1            1           3m18s
+deployment.apps/kiali                  1/1     1            1           3m18s
+deployment.apps/prometheus             1/1     1            1           3m18s
+
+root@master-node:~/istio-1.26.3# alias k=kubectl
+root@master-node:~/istio-1.26.3# k get ns
+NAME               STATUS   AGE
+calico-apiserver   Active   14d
+calico-system      Active   14d
+default            Active   14d
+istio-system       Active   16m
+kube-node-lease    Active   14d
+kube-public        Active   14d
+kube-system        Active   14d
+metallb-system     Active   13d
+tigera-operator    Active   14d
+
+
+Creating a new namespace
+
+root@master-node:~/istio-1.26.3# k create ns prod
+namespace/prod created
+root@master-node:~/istio-1.26.3# k get ns
+NAME               STATUS   AGE
+calico-apiserver   Active   14d
+calico-system      Active   14d
+default            Active   14d
+istio-system       Active   17m
+kube-node-lease    Active   14d
+kube-public        Active   14d
+kube-system        Active   14d
+metallb-system     Active   13d
+prod               Active   2s
+tigera-operator    Active   14d
+
+Creating a deployment from the docker image
+*******************************************
+NodeJS Microservice - Kubernetes Deployment -
+kubectl create deploy node-app --image siddharth67/node-service:v1  (default namespace)
+kubectl create deploy node-app -n prod --image siddharth67/node-service:v1  (defined namespace)
+
+root@master-node:~/istio-1.26.3# kubectl create deploy node-app -n prod --image siddharth67/node-service:v1
+deployment.apps/node-app created
+
+Expose the deployment using cluster-ip address
+***********************************************
+kubectl -n prod expose deploy node-app --name node-service --port 5000
+
+validation
+
+root@master-node:~/istio-1.26.3# kubectl get all -n prod
+NAME                           READY   STATUS    RESTARTS   AGE
+pod/node-app-f76bb96b8-95ggj   1/1     Running   0          4m37s
+
+NAME                   TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+service/node-service   ClusterIP   10.103.53.169   <none>        5000/TCP   64s
+
+NAME                       READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/node-app   1/1     1            1           4m37s
+
+NAME                                 DESIRED   CURRENT   READY   AGE
+replicaset.apps/node-app-f76bb96b8   1         1         1       4m37s
+
+If we can see the above still we are seeing the prod name space has only one pod running.
+The sidecar pod is still missing.
+
+To resolve this issue we need to label our name space
+root@master-node:/home/master# kubectl get ns --show-labels
+NAME               STATUS   AGE    LABELS
+calico-apiserver   Active   14d    kubernetes.io/metadata.name=calico-apiserver,name=calico-apiserver,pod-security.kubernetes.io/enforce-version=latest,pod-security.kubernetes.io/enforce=privileged
+calico-system      Active   14d    kubernetes.io/metadata.name=calico-system,name=calico-system,pod-security.kubernetes.io/enforce-version=latest,pod-security.kubernetes.io/enforce=privileged
+default            Active   14d    kubernetes.io/metadata.name=default
+istio-system       Active   113m   istio-injection=disabled,kubernetes.io/metadata.name=istio-system
+kube-node-lease    Active   14d    kubernetes.io/metadata.name=kube-node-lease
+kube-public        Active   14d    kubernetes.io/metadata.name=kube-public
+kube-system        Active   14d    kubernetes.io/metadata.name=kube-system
+metallb-system     Active   14d    kubernetes.io/metadata.name=metallb-system,pod-security.kubernetes.io/audit=privileged,pod-security.kubernetes.io/enforce=privileged,pod-security.kubernetes.io/warn=privileged
+prod               Active   95m    kubernetes.io/metadata.name=prod
+tigera-operator    Active   14d    kubernetes.io/metadata.name=tigera-operator,name=tigera-operator
+
+Look @ istio-system namespace
+istio-system       Active   113m   istio-injection=disabled,kubernetes.io/metadata.name=istio-system
+
+To enable label the prod name space use below
+
+root@master-node:/home/master# kubectl label ns prod istio-injection=enabled --overwrite
+namespace/prod labeled
+
+
+prod               Active   102m   istio-injection=enable,kubernetes.io/metadata.name=prod
+
+Once istio-injection label is enabled
+You need to do the deployment restart for istio pod running
+
+Before
+root@master-node:/home/master# kubectl get pod -n prod
+NAME                       READY   STATUS    RESTARTS   AGE
+node-app-f76bb96b8-95ggj   1/1     Running   0          97m
+root@master-node:/home/master#
+
+root@master-node:/home/master# kubectl get deployment -n prod
+NAME       READY   UP-TO-DATE   AVAILABLE   AGE
+node-app   1/1     1            1           98m
+
+After
+kubectl -n prod rollout restart deploy node-app
+
+if istio is enabled for prod namespace you will be sidecard pod along with your application pod
+
+root@master-node:/home/master# kubectl get pods -n prod
+NAME                        READY   STATUS        RESTARTS   AGE
+node-app-7cd9c7b56c-d5gvt   2/2     Running       0          7s
+
+Validation
+***********
+
+kubectl describe pod node-app-7cd9c7b56c-d5gvt -n prod
+
+  istio-proxy:
+    Container ID:  containerd://87ed8943a60458c787ba624327378231dbf75e53b1fa10445f7995d7874f207a
+    Image:         docker.io/istio/proxyv2:1.26.3
+    Image ID:      docker.io/istio/proxyv2@sha256:5b83f93307e7cb0cc0bd11882629c54b475b568fce1304c9afb0df459bab1e8a
+    Port:          15090/TCP
+    Host Port:     0/TCP
+    Args:
+
+
+
+before Kiali visualisation make sure below
+
+kubectl -n prod create deploy node-app --image siddharth67/node-service:v1 --replicas 2
+kubectl -n prod expose deploy node-app --name node-service --port 5000
